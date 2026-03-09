@@ -59,14 +59,14 @@ public class AuthorizationServerConfig {
 
     private final CorsConfigurationSource corsConfigurationSource;
 
-	@Value("${security.client-id}")
-	private String clientId;
+    @Value("${security.client-id:myclientid}")
+    private String clientId;
 
-	@Value("${security.client-secret}")
-	private String clientSecret;
+    @Value("${security.client-secret:myclientsecret}")
+    private String clientSecret;
 
-	@Value("${security.jwt.duration}")
-	private Integer jwtDurationSeconds;
+    @Value("${security.jwt.duration:86400}")
+    private Integer jwtDurationSeconds;
 
 	@Autowired
 	private UserDetailsService userDetailsService;
@@ -75,21 +75,23 @@ public class AuthorizationServerConfig {
         this.corsConfigurationSource = corsConfigurationSource;
     }
 
-	@Bean
-	@Order(2)
-	public SecurityFilterChain asSecurityFilterChain(HttpSecurity http) throws Exception {
+    @Bean
+    @Order(2)
+    public SecurityFilterChain asSecurityFilterChain(HttpSecurity http) throws Exception {
 
-		OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-	
-		http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
-			.tokenEndpoint(tokenEndpoint -> tokenEndpoint
-				.accessTokenRequestConverter(new CustomPasswordAuthenticationConverter())
-				.authenticationProvider(new CustomPasswordAuthenticationProvider(authorizationService(), tokenGenerator(), userDetailsService, passwordEncoder())));
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
 
-		http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()));
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource));
 
-		return http.build();
-	}
+        http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+            .tokenEndpoint(tokenEndpoint -> tokenEndpoint
+                .accessTokenRequestConverter(new CustomPasswordAuthenticationConverter())
+                .authenticationProvider(new CustomPasswordAuthenticationProvider(authorizationService(), tokenGenerator(), userDetailsService, passwordEncoder())));
+
+        http.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()));
+
+        return http.build();
+    }
 
 	@Bean
 	public OAuth2AuthorizationService authorizationService() {

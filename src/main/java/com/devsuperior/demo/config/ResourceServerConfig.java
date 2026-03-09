@@ -27,7 +27,7 @@ import org.springframework.web.filter.CorsFilter;
 @EnableMethodSecurity
 public class ResourceServerConfig {
 
-	@Value("${cors.origins}")
+	@Value("${cors.origins:http://localhost:3000}")
 	private String corsOrigins;
 
 	@Bean
